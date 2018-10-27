@@ -1,0 +1,50 @@
+global.R
+df = read.csv("./restaurantes.csv", stringsAsFactors = F)
+restaurantlist = df$basicData.name
+
+server.R
+shinyServer(function(input, output, session){
+  observeEvent( input$save,{
+    nota <- as.numeric(input$nota)
+    name <- input$name
+    row = which(apply(df, 1, function(r) any (r %in% c(name))))
+    print(paste0("Prevalue grade:",df[row, 141]))
+    print(paste0("Prevalue evaluations:",df[row, 142]))
+    df[row, 141]<-df[row, 141]+nota
+    df[row, 142]<-df[row, 142]+1
+    print(paste0("Updated row:",row))
+    print(paste0("Aftervalue grade:",df[row, 141]))
+    print(paste0("Aftervalue evaluations:",df[row, 142]))
+    output$grade<-renderPrint(df[row, 141]/df[row, 142])
+  })
+  output$mymap <- renderLeaflet({
+    leaflet() %>%
+      addProviderTiles(providers$Stamen.TonerLite,
+                       options = providerTileOptions(noWrap = TRUE)
+      ) %>%
+      addMarkers(lng = df$geoData.longitude, lat = df$geoData.latitude)
+  })
+}
+)
+
+ui.R
+
+ui <- fluidPage(
+  titlePanel("Valorar"),
+  sidebarPanel(
+    selectInput("name", "restaurante", choices = restaurantlist),
+    selectInput("nota", "nota", c("1","2","3","4","5")),
+    actionButton("save", "Add")
+  ),
+  mainPanel(
+    
+    mainPanel(leafletOutput("mymap",height = 750, width=750)),
+    textOutput("grade")
+  )
+)
+
+
+
+
+
+
