@@ -7,8 +7,11 @@ shinyServer(function(input, output, session){
   }, ignoreNULL = FALSE)
   
   output$mymap <- renderLeaflet({
-    m <- leaflet() %>% setView(lng = -3.69087, lat = 40.42093, zoom = 12)
-    m %>% addTiles()
+    leaflet() %>%
+      addProviderTiles(providers$Stamen.TonerLite,
+                       options = providerTileOptions(noWrap = TRUE)
+      ) %>%
+      addMarkers(lng = restaurants$geoData.longitude, lat = restaurants$geoData.latitude)
   })
 }
   )
